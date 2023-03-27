@@ -1,5 +1,5 @@
-#FROM tensorflow/tensorflow:latest-gpu
-FROM tf-training-base-v1
+FROM tensorflow/tensorflow:latest-gpu
+#FROM tf-training-base-v1
 #RUN mkdir Tensorflow
 #RUN mkdir Tensorflow/workspace
 
@@ -35,3 +35,7 @@ RUN git clone https://github.com/cocodataset/cocoapi.git && cd cocoapi/PythonAPI
 
 # copy the data (tfrecords) into the image
 COPY data/ workspace/data/
+
+# copy the training and the model export files into the workspace
+RUN cp /Tensorflow/models/research/object_detection/model_main_tf2.py /Tensorflow/workspace/model_main_tf2.py \
+ && cp /Tensorflow/models/research/object_detection/exporter_main_v2.py /Tensorflow/workspace/exporter_main_v2.py
