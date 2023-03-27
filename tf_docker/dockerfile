@@ -1,0 +1,37 @@
+#FROM tensorflow/tensorflow:latest-gpu
+FROM tf-training-base-v1
+#RUN mkdir Tensorflow
+#RUN mkdir Tensorflow/workspace
+
+WORKDIR "/Tensorflow/workspace"
+
+RUN apt-get update && apt-get install -y \
+  git \
+  nano \
+  python3-opengl \
+  protobuf-compiler \
+  python3-dev \
+  tar
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip \
+  && pip install --no-cache-dir -r requirements.txt
+
+# maybe these should be outside the container and in a mapped volume
+WORKDIR "/Tensorflow"
+RUN git clone https://github.com/tensorflow/models.git
+
+RUN cd models/research && pwd \
+  && protoc object_detection/protos/*.proto --python_out=. \
+  && cp object_detection/packages/tf2/setup.py . \
+  && python -m pip install .
+
+RUN git clone https://github.com/cocodataset/cocoapi.git && cd cocoapi/PythonAPI \
+  && make \
+  && cp -r pycocotools /Tensorflow/models/research/ \
+  && cd /Tensorflow/models/research \
+  && python -m pip install .
+
+
+# copy the data (tfrecords) into the image
+COPY data/ workspace/data/
